@@ -1,0 +1,316 @@
+---
+title: "DSM-3001 Time Series Analysis"
+author: "Mohammad Wasiq"
+format: html
+---
+
+This course is taught by [**Prof Athar Ali Khan**](https://www.amu.ac.in/faculty/statistics-and-operations-research/athar-ali-khan)
+
+# Introduction to Time Series 
+
+Data obtained from observations collected sequentially over time are extremely common.In business, we observe weekly interest rates, daily closing stock prices, monthly price indices, yearly sales figures, and so forth. In meteorology, we observe daily high and low temperatures, annual precipitation and drought indices, and hourly wind speeds. In agriculture, we record annual figures for crop and livestock production, soil erosion, and export sales. In the biological sciences, we observe the electrical activity of the heart at millisecond intervals. In ecology, we record the abundance of an animal species.
+
+The purpose of time series analysis is generally twofold: to understand or model the stochastic mechanism that gives rise to an observed series and to predict or forecast the future values of a series based on the history of that series and, possibly, other related series or factors.
+
+## Examples of Time Series
+
+### Annual Rainfall in Los Angeles
+Exhibit 1.1 displays a time series plot of the annual rainfall amounts recorded in Los Angeles, California, over more than 100 years. The plot shows considerable variation in rainfall amount over the years—some years are low, some high, and many are in-between in value. The year 1883 was an exceptionally wet year for Los Angeles, While 1983 was quite dry. For analysis and modeling purposes we are interested in whether or not consecutive years are related in some way. If so, we might be able to use one year’s rainfall value to help forecast next year’s rainfall amount. One graphical way to investigate that question is to pair up consecutive rainfall values and plot the resulting scatterplot of pairs.
+
+### Time Series Plot of Los Angeles Annual Rainfall
+```{r rfla, wrnings=FALSE}
+library(TSA)
+data(larain)
+head(larain)
+plot(larain,ylab='Inches',xlab='Year',type='o')
+```
+
+Above figure shows scatterplot for rainfall. For example, the point plotted near the lower right-hand corner shows that the year of extremely high rainfall, 40 inches in 1883, was followed by a middle of the road amount (about 12 inches) in 1884. The point near the top of the display shows that the 40 inch year was preceded by a much more typical year of about 15 inches.
+
+### Scatterplot of LA Rainfall versus Last Year’s LA Rainfall
+```{r scatter,warnigs=FALSE}
+plot(y=larain,x=zlag(larain),ylab='Inches',
+xlab='Previous Year Inches')
+```
+
+The main impression that we obtain from this plot is that there is little if any information about this year’s rainfall amount from last year’s amount. The plot shows no “trends” and no general tendencies. There is little correlation between last year’s rainfall amount and this year’s amount. From a modeling or forecasting point of view, this is not a very interesting time series.
+
+## An Industrial Chemical Process
+As a second example, we consider a time series from an industrial chemical process. The variable measured here is a color property from consecutive batches in the process. Exhibit 1.3 shows a time series plot of these color values. Here values that are neighbors in time tend to be similar in size. It seems that neighbors are related to one another.
+
+### Time Series Plot of Color Property from a Chemical Process
+```{r colorp,warnigs=FALSE}
+data(color)
+plot(color,ylab='Color Property',xlab='Batch',type='o')
+```
+
+This can be seen better by constructing the scatterplot of neighboring pairs as we did with the first example.
+
+Exhibit 1.4 displays the scatterplot of the neighboring pairs of color values. We see a slight upward trend in this plot—low values trend to be followed in the next batch by low values, middle-sized values tend to be followed by middle-sized values, and high values tend to be followed by high values. The trend is apparent but is not terribly strong. For example, the correlation in this scatterplot is about 0.6.
+
+### Scatterplot of Color Value versus Previous Color Value
+```{r scattercolor}
+plot(y=color,x=zlag(color),ylab='Color Property',
+xlab='Previous Batch Color Property')
+```
+
+## Annual Abundance of Canadian Hare
+Our third example concerns the annual abundance of Canadian hare. Exhibit 1.5 gives the time series plot of this abundance over about 30 years. Neighboring values here are very closely related. Large changes in abundance do not occur from one year to the next.
+This neighboring correlation is seen clearly in Exhibit 1.6 where we have plotted abundance versus the previous year’s abundance. As in the previous example, we see an upward trend in the plot—low values tend to be followed by low values in the next year, middle-sized values by middle-sized values, and high values by high values.
+
+### Abundance of Canadian Hare
+```{r abundace}
+data(hare)
+plot(hare,ylab='Abundance',xlab='Year',type='o')
+```
+
+### Hare Abundance versus Previous Year’s Hare Abundance
+```{r abundancescatter}
+plot(y=hare,x=zlag(hare),ylab='Abundance',
+xlab='Previous Year Abundance')
+```
+
+## Monthly Average Temperatures in Dubuque, Iowa
+The average monthly temperatures (in degrees Fahrenheit) over a number of years recorded in Dubuque, Iowa, are shown in Exhibit 1.7.
+This time series displays a very regular pattern called seasonality. Seasonality for monthly values occurs when observations twelve months apart are related in some manner or another. All Januarys and Februarys are quite cold but they are similar in value and different from the temperatures of the warmer months of June, July, and August, for example. There is still variation among the January values and variation among the June values. Models for such series must accommodate this variation while preserving the similarities. Here the reason for the seasonality is well understood—the Northern
+Hemisphere’s changing inclination toward the sun.
+
+### Average Monthly Temperatures, Dubuque, Iowa
+```{r temprature}
+data(tempdub)
+plot(tempdub,ylab='Temperature',type='o')
+```
+
+## Monthly Oil Filter Sales
+Our last example for this chapter concerns the monthly sales to dealers of a specialty oil filter for construction equipment manufactured by John Deere. When these data were first presented to one of the authors, the manager said, “There is no reason to believe
+that these sales are seasonal.” Seasonality would be present if January values tended to be related to other January values, February values tended to be related to other February values, and so forth. The time series plot shown in Exhibit 1.8 is not designed to display
+seasonality especially well. Exhibit 1.9 gives the same plot but amended to use meaningful plotting symbols. In this plot, all January values are plotted with the character J, all Februarys with F, all Marches with M, and so forth.† With these plotting symbols, it is much easier to see that sales for the winter months of January and February all tend to be high, while sales in September, October, November, and December are gener-ally quite low. The seasonality in the data is much easier to see from this modified time series plot.
+
+### Monthly Oil Filter Sales
+```{r monthlysaels}
+data(oilfilters)
+plot(oilfilters,type='o',ylab='Sales')
+```
+
+## Monthly Oil Filter Sales with Special Plotting Symbols
+```{r scattersales}
+plot(oilfilters,type='l',ylab='Sales')
+points(y=oilfilters,x=time(oilfilters),
+pch=as.vector(season(oilfilters)))
+```
+
+# Fundamental Concepts of Time Series
+We introduce the concepts of stochastic processes, mean and covariance functions, stationary processes, and autocorrelation functions.
+
+##  Time Series and Stochastic Processes
+The sequence of random variables ${Y_t : t = 0, \pm 1, \pm 2, \pm 3,\cdots}$ is called a stochastic process and serves as a model for an observed time series. It is known that the complete probabilistic structure of such a process is determined by the set of distributions of all finite collections of the $Y's$. 
+<br> Fortunately, we will not have to deal explicitly with these multivariate distributions. Much of the information in these joint distributions can be described in terms of means, variances, and covariances. Consequently, we concentrate our efforts on these first and second moments. (If the joint distributions of the $Y's$ are multivariate normal distributions, then the first and second moments completely determine all the joint distributions.)
+
+### Means, Variances, and Covariances
+For a stochastic process ${Y_t: t = 0, \pm1, \pm2, \pm3 \ldots}$, the __mean function__ is defined by
+$$\mu_t= E(Y_t)  \quad for\; t = 0, \pm1 \pm2 \ldots$$
+That is, $\mu_t$  is just the expected value of the process at time $t$. In general,$\mu_t$  can be different at each time point $t$.
+
+The **autocovariance** function, $\gamma_{t,s}$, is defined as 
+$$\gamma_{t ,s}= Cov (Y_t, Y_s) \quad for\quad t, s = 0, \pm 1,\pm 2,\ldots$$.
+$$where\quad Cov(Y_t, Y_s) = E((Y_t − \mu_t)(Y_s − \mu_s)) =E(Y_t\,Y_s) − \mu_t \mu_s$$
+
+The **autocorrelation** function, $\rho_{t,s}$, is given by
+$$\rho_{t ,s}=Corr( Y_t, Y_s),\quad for\quad t, s = 0, \pm1\pm2,\ldots$$
+
+where
+$$corr(y_t,y_s)=\frac{cov(y_t,y_s)}{\sqrt{var(y_t)\,\,var(y_s)}}=\frac{\gamma_{t,s}}{\sqrt{\gamma_{t,t} \,\,\gamma_{s,s}}}$$
+
+The following **important properties** follow from known results and our definitions:
+$$\bullet \quad \gamma_{t, t} = Var( Y_t) \Rightarrow \rho_{t,t}=1$$
+$$\bullet \quad \gamma_{t,s}= \gamma_{s, t} \Rightarrow \rho_{t,s}=\rho_{s,t}$$
+$$\bullet \quad \gamma_{t s} \le \gamma_{t,t} \gamma_{s,s} \Rightarrow \rho_{t,s} \le 1$$
+Values of $\rho_{t,s}$ near $\pm1$ indicate strong (linear) dependence, whereas values near zero indicate weak (linear) dependence. If $ρ_{t,s} = 0$, we say that $Y_t$  and $Ys_$ are uncorrelated.
+
+To investigate the covariance properties of various time series models, the following result will be used repeatedly: If $c_1, c_2,\ldots c_m$ and $d_1, d_2,\dots, d_n$ are constants and $t_1,t_2,\ldots, t_m$ and $s_1, s_2,\ldots, s_n$ are time points, then 
+$$cov[\sum_{i=1}^m c_iY_{t_i},\sum_{j=1}^n d_jY_{s_j}]=\sum_{i=1}^m \sum_{j=1}^n c_id_jcov(y_{t_i},y_{s_j})$$
+
+## The Random Walk
+Let $e_1, e_2,\ldots$ be a sequence of independent, identically distributed random variables each with zero mean and variance $\sigma_e^2$. The observed time series, ${Y_t: t = 1, 2,\dots}$, is constructed as follows:
+$$Y_1 = e_1$$
+$$Y_2 = e_1 + e_2$$
+$$\vdots$$
+$$Y_t= e_1 + e_2 + \dots + e_t$$
+Alternatively, we can write
+$$Y_t= Y_{t-1} + e_t$$
+
+with initial condition $Y_1 = e_1$
+
+### Means, Variances, and Covariances
+**Mean**
+$$\mu_t = E(Y_t) = E(e_1 + e_2 + \dots + e_t)$$
+$$\mu_t = E(e_1) + E(e_2) + \dots + E(e_t)$$
+$$\mu_t = 0 + 0 + \dots + 0$$
+$$\mu_t = 0$$
+so that $\mu_t = 0$ for all $t$.
+
+We also have **variance** of 
+$$Var(Y_t) = Var(e_1 + e_2 + \dots + e_t)$$
+$$Var(Y_t) = Var(e_1) + Var(e_2) + \dots + Var(e_t)$$
+$$Var(Y_t) = \sigma_e^2 + \sigma_e^2 + \dots + \sigma_e^2 $$
+$$Var(Y_t) = t \, \sigma_e^2$$
+
+Notice that teh process variance increases with linearly time $t$.
+
+To investigate of a covariance function of a random walk.
+<br> Suppose we have $1 \le t \le s$, then we have,
+$$Y_{t,s} = Cov(Y_t, Y_s) = Cov(e_1 + e_2 + \dots + e_t, \quad e_1 + e_2 + \dots + e_s)$$
+$$cov[\sum_{i=1}^m c_iY_{t_i},\sum_{j=1}^n d_jY_{s_j}]=\sum_{i=1}^m \sum_{j=1}^n c_id_jcov(y_{t_i},y_{s_j})$$
+we have,
+$$cov(Y_t,Y_s) = \sum_{i=1}^m \sum_{j=1}^n cov(e_i, e_j)$$
+However these covariances are $0$ unless $i=j$ in which case they are equal variance of $e_i = \sigma_e^2$.
+
+There are exactly $t$ of these so that $\gamma_{t,s} = t\,\sigma_e^2$.
+
+Since $\gamma_{t,s} = \gamma_{s,t}$, this specifies the autocovariance function for all time points $t$ and $s$ and we can write
+$$\gamma_{t,s} = t\,\sigma_e^2 \quad for \quad 1 \le t \le s$$
+The autocorrelation function for the random walk is now easily obtained as
+$$\rho_{t,s}=\frac{\gamma_{t,s}}{\sqrt{\gamma_{t,t} \,\,\gamma_{s,s}}} = \sqrt{\frac{t}{s}} \quad for \quad 1 \le t \le s$$
+The following numerical values help us understand the behavior of the random walk.
+$$\rho_{1,2}=\sqrt{\frac{1}{2}}=0.707 \quad \quad \rho_{8,9}=\sqrt{\frac{8}{9}}=0.943$$
+$$\rho_{24,25}=\sqrt{\frac{24}{25}}=0.980 \quad \quad \rho_{1,25}=\sqrt{\frac{1}{25}}=0.200$$
+he values of $Y$ at neighboring time points are more and more strongly and positively correlated as time goes by. On the other hand, the values of $Y$ at distant time points(1,25) are less and less correlated.
+
+```{r, warning=FALSE, message=FALSE}
+require(TSA)
+data("rwalk")
+head(rwalk)
+plot(rwalk, type="o", ylab = "Random Walk")
+```
+
+## A Moving Average
+As a second example, suppose that $Y_t$ is constructed as
+$$Y_t = \frac{e_t + e_{t-1}}{2}$$
+where the $e's$ are assumed to be independent and identically distributed with mean $zero$ and variance $\sigma_e^2$. Here **mean**
+$$\mu_t = E(Y_t) = E\Big(\frac{e_t + e_{t-1}}{2} \Big) = \frac{E(e_t) + E(e_{t-1})}{2}=0$$
+and **variance**
+$$Var(Y_t) = Var\Big(\frac{e_t + e_{t-1}}{2} \Big) = \frac{1}{4}Var(e_t) + Var(e_{t-1})$$
+$$Var(Y_t)= \frac{1}{4}2\,\sigma_e^2= 0.5\,\sigma_e^2$$
+Also **Covariance**,
+$$Cov(Y_t, Y_{t-1}) = Cov\Big(\frac{e_t + e_{t-1}}{2},\frac{e_{t-1} + e_{t-2}}{2} \Big)$$
+$$ = \frac{Cov(e_t, e_{t-1}) + Cov(e_t, e_{t-2}) + Cov(e_{t-1}, e_{t-1}) + Cov(e_{t-1}, e_{t-2})}{4}$$
+$$ = \frac{Cov(e_{t-1}, e_{t-1})}{4} \quad \text{(as all the other covariances are zero)}$$
+$$ = 0.25\, \sigma_e^2 \quad for \, all \,\, t$$
+
+Furthermore
+$$Cov(Y_t, Y_{t-2}) = Cov\Big(\frac{e_t + e_{t-1}}{2},\frac{e_{t-2} + e_{t-3}}{2} \Big)$$
+$$Cov(Y_t, Y_{t-2})= 0 \quad \text{since the e's are independent}$$
+Similarly, $Cov(Y_t,Y_{t−k})= 0$ for $k>1$, so we may write
+
+$$
+\gamma_{t,s} = \begin{cases} 
+  0.5  \,  \sigma_e^2 \, ,  & \text{for |t - s| = 0} \\
+  0.25 \,  \sigma_e^2 \, ,  & \text{for |t - s| = 1} \\
+  0    \,               ,   & \text{for |t - s| > 1}
+\end{cases}
+$$
+
+For the autocorrelation function, we have
+$$
+\rho_{t,s} = \begin{cases} 
+  1   \,  , & \text{for |t - s| = 0} \\
+  0.5 \,  , & \text{for |t - s| = 1} \\
+  0   \,  , & \text{for |t - s| > 1}
+\end{cases}
+$$
+
+$$\rho_{t,t-1}=\frac{\gamma_{t,s}}{\sqrt{\gamma_{t,t} \,\,\gamma_{s,s}}}= \frac{0.25\sigma_e^2}{\sqrt{0.5\sigma_e^2. 0.5\sigma_e^2}}= \frac{1}{2}=0.5$$
+Notice that $\rho_{2,1}= \rho_{3,2}= \rho_{4,3}= \rho_{9,8}= 0.5$. Values of $Y$ precisely one time unit apart have exactly the same correlation no matter where they occur in time. 
+<br> Furthermore, $\rho_{3,1}= \rho_{4,2}= \rho_{t,t−2}$ and, more generally, $\rho_{t,t−k}$ is the same for all values of $t$. This leads us to the important concept of stationarity.
+
+## Stationarity
+The basic idea of stationarity is that the probability laws that govern the behavior of the process do not change over time. In a sense, the process is in statistical equilibrium. Specifically, a process $\{Yt\}$ is said to be **strictly stationary** if the joint distribution of $Y_{t_1}, Y_{t_2},...,Y_{t_n}$ is the same as the joint distribution of $Y_{t_1-k}, Y_{t_2-k},...,Y_{t_n-k}$ for all choices of time points $t_1,t_2,...,t_n$ and all choices of time lag $k$.
+
+Thus, when $n=1$ the (univariate) distribution of $Y_t$ is the same as that of $Y_{t − k}$ for all $t$ and $k;$ in other words, the $Y's$ are (marginally) identically distributed. It then follows that $E(Y_t)=E(Y_{t−k})$ for all $t$ and $k$ so that the mean function is constant for all time.
+
+Additionally, $Var(Y_t)=Var(Y_{t−k})$ for all $t$ and $k$ so that the variance is also constant over time.
+
+Setting $n=2$ in the stationarity definition we see that the bivariate distribution of $Y_t$ and $Y_s$ must be the same as that of $Y_{t−k}$ and $Y_{s−k}$ from which it follows that $Cov(Y_t, Y_s)= Cov(Y_{t−k}, Y_{s−k})$ for all $t$, $s$, and $k$. Putting $k=s$ and then $k=t$, we obtain
+$$\gamma_{t,s}= Cov(Y_{t−s}, Y_0)$$
+$$= Cov(Y_0, Y_{s−t})$$
+$$= Cov(Y_0, Y_{|s−t|})$$
+$$\gamma_{t,s}= \gamma_{0,|s−t|}$$
+That is, the covariance between $Y_t$ and $Y_s$ depends on time only through the time difference $|t−s|$ and not otherwise on the actual times $t$ and $s$. Thus, for a stationary process, we can simplify our notation and write
+$$\gamma_k= Cov(Y_t, Y_{t−s})$$
+and
+$$\rho_k= Corr(Y_t, Y_{t−s})$$
+Note also that
+$$\rho_k= \frac{\gamma_k}{\gamma_0}$$
+The general properties now become
+$$\bullet \quad  \gamma_k= Cov(Y_t, Y_t)= Var(Y_t) \Rightarrow \rho_0= 0$$
+$$\bullet \quad \gamma_k= \gamma_{-k} \Rightarrow \rho_k= \rho_{-k}$$
+$$\bullet \quad |\gamma_k| \le \gamma_0 \Rightarrow |\rho_k| \le 1$$
+If a process is strictly stationary and has finite variance, then the covariance function must depend only on the time lag $k$.
+
+### Weakly Stationarity
+A stochastic process $\{Yt\}$ is said to be **weakly** (or **second-order**)
+**stationary** if
+1. The mean function is constant over time, and
+2. $\gamma_{t,t-k}= \gamma_{0,k}$ for all time $t$ and lag $k$
+
+### White Noise
+A very important example of a stationary process is the so-called **white noise** process, which is defined as a sequence of independent, identically distributed random variables $\{e_t\}$. Its importance stems not from the fact that it is an interesting model itself but from the fact that many useful processes can be constructed from white noise. The fact that $\{e_t\}$ is strictly stationary is easy to see since
+as required. Also, μt
+$$Pr(e_{t_1}\le x_1, e_{t_2}\le x_2,...,e_{t_n}\le x_n)$$
+$$= Pr(e_{t_1}\le x_1) Pr(e_{t_2}\le x_2)...Pr(e_{t_n}\le x_n) \quad \text{(by independence)}$$
+$$= Pr(e_{t_1-k}\le x_1) Pr(e_{t_2-k}\le x_2)...Pr(e_{t_n-k}\le x_n) \quad \text{(identical distribution)}$$
+$$= Pr(e_{t_1-k}\le x_1, e_{t_2-k}\le x_2,...,e_{t_n-k}\le x_n) \quad \text{(by independence)}$$
+as required. Also, $\mu_t=E(e_t)$ is constant and
+$$
+\gamma_k = \begin{cases} 
+  Var(e_i)   \, , & \text{for k = 0} \\
+  0   \,        , & \text{for k} \neq 0
+\end{cases}
+$$
+Alternatively, we can write
+as required. Also, $\mu_t=E(e_t)$ is constant and
+$$
+\rho_k = \begin{cases} 
+  1   \,  , & \text{for k = 0} \\
+  0   \,  , & \text{for k} \neq 0
+\end{cases}
+$$
+
+#### Moving Average of White Noise
+The moving average example where $Y_t=(e_t + e_{t−1})/2$, is another example of a stationary process constructed from white noise. In our new notation, we
+have for the moving average process that
+$$
+\rho_k = \begin{cases} 
+  1   \,  , & \text{for k = 0} \\
+  0.5 \,  , &  \text{for |k|=1} \\
+  0   \,  , & \text{for |k|} \ge 2
+\end{cases}
+$$
+
+### Random Cosine Wave
+As a somewhat different example, consider the process defined as follows :
+$$Y_t= cos\Bigg[2\pi \Big(\frac{t}{12}+ \Phi \Big) \Bigg] \quad t=\pm1, \pm2,...$$
+where $\Phi \sim U(0,1)$
+$$\mu_t= E(Y_t)= E\Bigg\{ cos\Bigg[2\pi \Big(\frac{t}{12}+ \Phi \Big) \Bigg]\Bigg\}$$
+$$\mu_t= E(Y_t)= \int_{0}^1 cos\Bigg[2\pi \Big(\frac{t}{12}+ \phi \Big) \Bigg] d\phi$$
+$$= \frac{1}{2\pi} sin\Bigg[2\pi \Big(\frac{t}{12}+ \phi \Big) \Bigg]_{\phi=0}^{\phi=1}$$
+$$= \frac{1}{2\pi} \Bigg[sin\Big(2\pi\frac{t}{12}+ 2\pi \Big) - sin\Big(2\pi\frac{t}{12}\Big) \Bigg]$$
+$$\mu_t= E(Y_t)= 0 \quad \text{for all t} \quad \because sin(2\pi)=0$$
+Also
+$$\gamma_{t,s}= E\Bigg\{ cos\Bigg[2\pi \Big(\frac{t}{12}+ \Phi \Big) \Bigg]cos\Bigg[2\pi \Big(\frac{s}{12}+ \Phi \Big) \Bigg]\Bigg\}$$
+$$ = \int_{0}^1 cos\Bigg[2\pi \Big(\frac{t}{12}+ \phi \Big) \Bigg]cos\Bigg[2\pi \Big(\frac{s}{12}+ \phi \Big) \Bigg] d\phi$$
+$$ = \frac{1}{2}\int_{0}^1 \Bigg\{cos\Bigg[2\pi \Big(\frac{t-s}{12}\Big) \Bigg]cos\Bigg[2\pi \Big(\frac{t+s}{12}+ 2\phi \Big) \Bigg]\Bigg\} d\phi$$
+$$ = \frac{1}{2} \Bigg\{cos\Bigg[2\pi \Big(\frac{t-s}{12}\Big) \Bigg] + \frac{1}{4\pi}sin\Bigg[2\pi \Big(\frac{t+s}{12}+ 2\phi \Big) \Bigg]_{\phi=0}^{\phi=1}\Bigg\}$$
+$$\gamma_{t,s}= \frac{1}{2}cos\Bigg[2\pi \Bigg(\frac{|t-s|}{12}\Bigg) \Bigg]$$
+So the process is stationary with autocorrelation function
+$$\rho_k= cos\Big(2\pi\frac{k}{12}\Big) \quad for\,\, k=0,\pm1,\pm2,...$$
+
+
+
+
+
+```
+require(rmarkdown)
+render("tsaw.qmd", word_document(toc = T, number_sections = T))
+```
+
